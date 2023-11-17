@@ -2,10 +2,11 @@ const express = require('express')
 const app = express();
 const morgan=require('morgan');
 const sql = require('mssql')
+const bodyParser = require('body-parser');
 
 app.use(morgan('dev'));
 app.use(express.urlencoded({extended:false}));
-app.use(express.json());
+app.use(bodyParser.json());
 
 /*const Pool = require('pg').Pool;
 
@@ -18,62 +19,71 @@ const pgPool = new Pool({
 });*/
 
 const sqlConfig = {
-    user: process.env.DB_USER,
-    password: process.env.DB_PWD,
-    database: process.env.DB_NAME,
-    server: process.env.DB_SERVER,
-  }
+    user: `sa`,
+    password: `unity`,
+    database: `nusis`,
+    server: `192.168.1.187`,
+    options: {
+        cryptoCredentialsDetails: {
+            minVersion: 'TLSv1'
+        },
+        trustServerCertificate: true
+    },
+}
 
-app.get('/', (req, res) => {    
-    res.json(
-        {
-            "Title": "Hola mundo"
-        }
-    );
+app.get("/", (req, res) => {
+    res.sendFile(__dirname + '/index.html');
 })
 
 async function queryTarifas(apiData){
-    let pool = await sql.connect(config)
+    try{
+        let pool = await sql.connect(sqlConfig)
 
-    let result = await pool.request()
-            .input('MotivoVisita', apiData.motivoVisita)
-            .input('Producto', apiData.producto)
-            .input('EstadoEntrada', apiData.estadoEntrada)
-            .input('Vigencia', apiData.vigencia)
-            .input('TipoPlaca', apiData.tipoPlaca)
-            .input('PaisPlaca', apiData.paisPlaca)
-            .input('bAsistenciaPlus', apiData.bAsistenciaPlus)
-            .input('EdadConductor', apiData.edadConductor)
-            .input('bRemolque', apiData.bRemolque)
-            .input('AnioVehiculo', apiData.anioVehiculo)
-            .output('Prima', 0)
-            .output('Derecho', 0)
-            .output('Asistencia', 0)
-            .output('AsistenciaPlus', 0)
-            .output('ExtraPrimaCobrar', 0)
-            .output('ProductoAumento', 0)
-            .output('PrimaOfrecer', 0)
-            .output('DerechoOfrecer', 0)
-            .output('DiferenciaProductoOfrecer', 0)
-            .output('DiferenciaProductoOfrecerDerecho', 0)
-            .execute('spGetTarifasAutoAPI')
-        
-        console.log(result)
-
-    return result;
+        let result = await pool.request()
+                .input('MotivoVisita', apiData.MotivoVisita)
+                .input('Producto', apiData.Producto)
+                .input('EstadoEntrada', apiData.EstadoEntrada)
+                .input('Vigencia', apiData.Vigencia)
+                .input('TipoPlaca', apiData.TipoPlaca)
+                .input('PaisVenta', apiData.PaisPlaca)
+                .input('bAsistenciaPlus', apiData.bAsistenciaPlus)
+                .input('EdadConductor', apiData.EdadConductor)
+                .input('bRemolque', apiData.bRemolque)
+                .input('AnioVehiculo', apiData.AnioVehiculo)
+                /*.output('Prima', 0)
+                .output('Derecho', 0)
+                .output('Asistencia', 0)
+                .output('AsistenciaPlus', 0)
+                .output('ExtraPrimaCobrar', 0)
+                .output('ProductoAumento', '')
+                .output('PrimaOfrecer', 0)
+                .output('DerechoOfrecer', 0)
+                .output('DiferenciaProductoOfrecer', 0)
+                .output('DiferenciaProductoOfrecerDerecho', 0)*/
+                .execute('spGetTarifasAutoAPI')
+            
+            console.log(result)
+    
+        return result;
+    }catch(error){
+        console.log('Error: ', error)
+    }
+    
 }
 
 app.post('/tarifas', async (req, res) => {
-    const motivoVisita = req.body.body.motivoVisita;
-    const producto = req.body.body.producto;
-    const estadoEntrada = req.body.body.estadoEntrada;
-    const vigencia = req.body.body.vigencia;
-    const tipoPlaca = req.body.body.tipoPlaca;
-    const paisPlaca = req.body.body.paisPlaca;
-    const bAsistenciaPlus = req.body.body.bAsistenciaPlus;
-    const edadConductor = req.body.body.edadConductor;
-    const bRemolque = req.body.body.bRemolque;
-    const anioVehiculo = req.body.body.anioVehiculo;
+    console.log(req.body)
+    
+    const motivoVisita =  parseInt(req.body.motivoVisita);
+    const producto = req.body.producto;
+    const estadoEntrada = req.body.estadoEntrada;
+    const vigencia = parseInt(req.body.vigencia);
+    const tipoPlaca = req.body.tipoPlaca;
+    const paisPlaca = req.body.paisPlaca;
+    const bAsistenciaPlus = parseInt(req.body.bAsistenciaPlus);
+    const edadConductor = parseInt(req.body.edadConductor);
+    const bRemolque = parseInt(req.body.bRemolque);
+    const anioVehiculo = parseInt(req.body.anioVehiculo);
 
     const apiData = {
         MotivoVisita: motivoVisita,
@@ -87,7 +97,7 @@ app.post('/tarifas', async (req, res) => {
         bRemolque: bRemolque,
         AnioVehiculo: anioVehiculo,
     }
-
+    //console.log(typeof apiData.MotivoVisita)
     const result = await queryTarifas(apiData)
 
     res.json(result)

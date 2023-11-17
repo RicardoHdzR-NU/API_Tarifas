@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ejecutar API de Tarifas</title>
+</head>
+<body>
+    <button id="apiCall">Ejecutar</button>
+    <br>
+    <script>
+        const button = document.getElementById('apiCall');
+
+        button.addEventListener('click', async _ => {
+        try {     
+            const response = await fetch('http://localhost:8080/tarifas', {
+            method: 'POST',
+            body: JSON.stringify({
+                motivoVisita: "1",
+                producto: "JAT",
+                estadoEntrada: "TX",
+                vigencia: "4",
+                tipoPlaca: "MX",
+                paisPlaca: "MX",
+                bAsistenciaPlus: "0",
+                edadConductor: "40",
+                bRemolque: "0",
+                anioVehiculo: "1989"
+            }),
+            headers: {
+                "Content-Type": "application/json",
+            },
+            });
+            console.log('Completed!', response);
+        } catch(err) {
+            console.error(`Error: ${err}`);
+        }
+        });
+    </script>
+</body>
+</html>
