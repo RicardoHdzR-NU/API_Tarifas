@@ -11,7 +11,7 @@
 
         button.addEventListener('click', async _ => {
         try {     
-            const response = await fetch('http://localhost:8080/tarifas', {
+            const response = await fetch('https://api-tarifas.onrender.com/tarifas', {
             method: 'POST',
             body: JSON.stringify({
                 motivoVisita: "1",
