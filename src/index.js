@@ -8,16 +8,6 @@ app.use(morgan('dev'));
 app.use(express.urlencoded({extended:false}));
 app.use(bodyParser.json());
 
-/*const Pool = require('pg').Pool;
-
-const pgPool = new Pool({
-    user: 'me',
-    host: 'localhost',
-    database: 'nuapi',
-    password: 'password',
-    port: 5432,
-});*/
-
 const sqlConfig = {
     user: `sa`,
     password: `unity`,
@@ -50,16 +40,6 @@ async function queryTarifas(apiData){
                 .input('EdadConductor', apiData.EdadConductor)
                 .input('bRemolque', apiData.bRemolque)
                 .input('AnioVehiculo', apiData.AnioVehiculo)
-                /*.output('Prima', 0)
-                .output('Derecho', 0)
-                .output('Asistencia', 0)
-                .output('AsistenciaPlus', 0)
-                .output('ExtraPrimaCobrar', 0)
-                .output('ProductoAumento', '')
-                .output('PrimaOfrecer', 0)
-                .output('DerechoOfrecer', 0)
-                .output('DiferenciaProductoOfrecer', 0)
-                .output('DiferenciaProductoOfrecerDerecho', 0)*/
                 .execute('spGetTarifasAutoAPI')
             
             console.log(result)
@@ -102,14 +82,6 @@ app.post('/tarifas', async (req, res) => {
 
     res.json(result)
 
-    /*pgPool.query(`CALL spGetTarifasAutoAPI(${apiData})`, (err, result) => {
-        if(err){
-            console.error('Error en query: ', err);
-        }else {
-            console.log(result.rows)
-            res.json(result.rows);
-        }
-    })*/
 })
 
 const port = process.env.PORT || 8080;
