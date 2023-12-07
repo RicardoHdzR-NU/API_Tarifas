@@ -3,6 +3,7 @@ const app = express();
 const morgan=require('morgan');
 const sql = require('mssql')
 const bodyParser = require('body-parser');
+const axios = require('axios');
 
 app.use(morgan('dev'));
 app.use(express.urlencoded({extended:false}));
@@ -51,8 +52,26 @@ async function queryTarifas(apiData){
     
 }
 
+async function queryCodigo(apiData){
+    try{
+        let pool = await sql.connect(sqlConfig)
+
+        let result = await pool.request()
+                .input('Agente', apiData.Agente)
+                .input('Subagente', apiData.Subagente)
+                .execute('sp_digitalpermit')
+            
+            console.log(result)
+    
+        return result.recordset;
+    }catch(error){
+        console.log('Error: ', error)
+    }
+    
+}
+
 app.post('/tarifas', async (req, res) => {
-    console.log(req.body)
+    //console.log(req.body)
     
     const motivoVisita =  parseInt(req.body.motivoVisita);
     const producto = req.body.producto;
@@ -81,6 +100,44 @@ app.post('/tarifas', async (req, res) => {
     const result = await queryTarifas(apiData)
 
     res.json(result)
+
+})
+
+app.post("/XCodeDigital", async (req, res) => {
+    //const agente =  req.body.Agente
+    //const subagente = req.body.subagente
+    const noTransaction = req.body.NoTransaction
+    const usuario = req.body.Usuario
+    const password = req.body.Password
+    const identifyCode = req.body.IdentifyCode
+    const sku = req.body.Sku
+    const telefono = req.body.Telefono
+    const email = req.body.Email
+
+    /*const apiData = {
+        Agente: agente,
+        Subagente: subagente,
+    }
+
+    const result = await queryCodigo(apiData)*/
+
+    const postData = {
+        Usuario: usuario,
+        Password: password,
+        identifyCode: identifyCode,
+        Sku: parseInt(sku),
+        Telefono: parseInt(telefono),
+        Email: email,
+        NoTransactionCte: parseInt(noTransaction),
+    }
+
+    const response = await axios.post('https://www.nuicservices.com/National/proc_WsAutoDigital.asp', {
+        body: {
+            postData
+        }
+    })
+    console.log(response.data)
+    res.json(response.data)
 
 })
 
