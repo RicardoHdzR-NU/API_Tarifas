@@ -1,3 +1,4 @@
+//Modulos necesarios para el funcionamiento
 const express = require('express')
 const app = express();
 const morgan=require('morgan');
@@ -9,6 +10,7 @@ app.use(morgan('dev'));
 app.use(express.urlencoded({extended:false}));
 app.use(bodyParser.json());
 
+//configuración para la conexión con la base de datos
 const sqlConfig = {
     user: `sa`,
     password: `unity`,
@@ -22,10 +24,12 @@ const sqlConfig = {
     },
 }
 
+//accesando a la ruta raíz abre el archivo
 app.get("/", (req, res) => {
     res.sendFile(__dirname + '/index.html');
 })
 
+//función que llama al SP spGetTarifasAutoAPI
 async function queryTarifas(apiData){
     try{
         let pool = await sql.connect(sqlConfig)
@@ -52,6 +56,7 @@ async function queryTarifas(apiData){
     
 }
 
+//Función que llama al SP sp_digitalpermit
 async function queryCodigo(apiData){
     try{
         let pool = await sql.connect(sqlConfig)
@@ -70,6 +75,7 @@ async function queryCodigo(apiData){
     
 }
 
+//request que recibe los datos para enviar al SP spGetTarifasAutoAPI
 app.post('/tarifas', async (req, res) => {
     //console.log(req.body)
     
@@ -103,9 +109,11 @@ app.post('/tarifas', async (req, res) => {
 
 })
 
+//request que recibe los datos para enviar al SP spGetTarifasAutoAPI
 app.post("/XCodeDigital", async (req, res) => {
     //const agente =  req.body.Agente
     //const subagente = req.body.subagente
+    console.log(req)
     const noTransaction = req.body.NoTransaction
     const usuario = req.body.Usuario
     const password = req.body.Password
@@ -141,5 +149,6 @@ app.post("/XCodeDigital", async (req, res) => {
 
 })
 
+//inicialización del servidor
 const port = process.env.PORT || 8080;
 app.listen(port, () => console.log(`Listening on port ${port}...`));
